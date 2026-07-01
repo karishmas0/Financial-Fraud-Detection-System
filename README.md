@@ -1,62 +1,56 @@
-# 🚨 Smart Fraud Detection AI (The 2-Step System)
+# 🏦 End-to-End Business-Constrained Fraud Detection Pipeline
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![XGBoost](https://img.shields.io/badge/XGBoost-GPU--Accelerated-orange)
-![TensorFlow/Keras](https://img.shields.io/badge/TensorFlow-Deep%20Learning-FF6F00)
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![XGBoost](https://img.shields.io/badge/XGBoost-Enabled-orange.svg)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-LSTM-yellow.svg)
+![Optuna](https://img.shields.io/badge/Optuna-Hyperparameter%20Tuning-red.svg)
 
-## 📌 The Problem We Are Solving
-Banks face a big problem: If their security is too weak, thieves steal money. If their security is too strict, good customers get their cards blocked for no reason (which makes them angry!). Single AI models struggle to balance this.
+## 📌 Executive Summary
+This project implements an advanced, two-stage machine learning pipeline designed to process financial transactions at scale. Instead of relying on a single model and a standard 0.5 probability threshold, this system is optimized for **strict business constraints**: minimizing False Negatives (missed fraud) while drastically reducing the Human-in-the-Loop (HITL) review queue.
 
-**Our Solution:** Instead of one AI, we built a team of **Two AIs** working together to keep the bank safe without annoying the customers.
+The system achieved a **99.44% total automation rate** on 1.78 million transactions, safely auto-approving good customers and confidently blocking fraud, leaving less than 0.6% of traffic for manual review.
 
----
+## 🏗️ System Architecture
 
-## 🧠 How It Works (The 2 Steps)
+### Stage 1: The Frontline Filter (XGBoost)
+* **Goal:** High-speed processing and strict risk capping.
+* **Mechanism:** An XGBoost classifier tuned to capture the vast majority of safe traffic. A custom dynamic threshold is mathematically derived to ensure the model misses no more than 175 fraudulent transactions.
+* **Outcome:** Auto-approves the obvious non-fraud traffic and routes the uncertain "grey area" traffic to the Stage 2 review queue.
 
-### 🛡️ Step 1: The "Strict Bouncer" (XGBoost AI)
-* **What it does:** It quickly checks every single transaction that comes to the bank. 
-* **The Rule:** "Do not let any fraud escape."
-* **How it decides:** If your transaction looks 100% safe, it approves your payment instantly. But if it has even a 1% doubt, it does **not** fail your payment. Instead, it holds it and sends it to Step 2. 
+### Stage 2: The Deep Sequence Rescuer (LSTM)
+* **Goal:** False Positive rescue and final automated rejection.
+* **Mechanism:** A deep learning Long Short-Term Memory (LSTM) network that looks at the sequential history of the flagged user (N=5 lookback) and calculates the temporal gap between transactions (`id_gap_since_last_tx`).
+* **Outcome:** Uses a dual-threshold optimization (found via Optuna) to "rescue" good customers who were mistakenly flagged by Stage 1, while auto-rejecting obvious fraud. Only the hardest edge cases are sent to the manual React Dashboard.
 
-### 🕵️ Step 2: The "Smart Detective" (Deep LSTM AI)
-* **What it does:** This AI is highly advanced. It only checks the "doubtful" cases sent by the Bouncer. 
-* **The Rule:** "Do not block a good customer."
-* **How it decides:** Instead of just looking at your current payment, it looks at your **last 5 transactions** like a short movie. It understands your spending habits. It realizes, *"Oh, this isn't a fraudster, this is just a good customer buying a new iPhone."* It clears the good customers and only blocks the actual thieves.
+## 📊 Final Business Metrics
 
----
+The pipeline was tested on **1,782,993** transactions with the following real-world routing outcomes:
 
-## 📊 The Results (Tested on 1.7 Million Payments)
+| Routing Decision | Transaction Count | Percentage of Traffic |
+| :--- | :--- | :--- |
+| **Stage 1 Auto-Approved** | 1,755,426 | 98.45% |
+| **Stage 2 Auto-Approved (Rescue)** | 14,991 | 0.84% |
+| **Stage 2 Auto-Rejected (Blocked)** | 2,654 | 0.15% |
+| **Routed to Manual Dashboard** | **9,922** | **0.56%** |
 
-We tested this system on **1,782,993** real transactions. The results were amazing:
+* **Total System Automation Rate:** `99.44%`
+* **Stage 2 F1-Score (Auto-Reject):** `0.6450`
 
-* **Frauds Caught:** 2,640
-* **Frauds Missed:** Only 26 (The Bouncer successfully stopped 99% of the attacks!)
-* **Happy Customers:** Over **1.5 Million** good customers had their payments approved instantly without any friction or delay.
-* **Team Workload Saved:** The system automatically handled over 92% of the traffic, saving the bank's human team thousands of hours of manual checking.
+### Automated Blocking Errors (Pre-Human Review)
+* **Hard False Negatives (Missed Fraud):** 318
+* **Hard False Positives (Good users blocked):** 995
 
----
+## 🛠️ Technologies Used
+* **Data Processing:** `Pandas`, `NumPy`, `Scikit-Learn`
+* **Machine Learning:** `XGBoost` (Hist-tree method on GPU)
+* **Deep Learning:** `TensorFlow` / `Keras` (LSTM, Masking, Dropout)
+* **Hyperparameter Optimization:** `Optuna` (Custom objective functions calculating business cost)
 
-## 📁 What's in the Box? (Files)
+## 📁 Repository Structure
+* `final-fraud-detection-project.ipynb`: The complete, runnable Kaggle notebook containing both Stage 1 and Stage 2 pipelines.
+* `business_xgb_model.json`: The exported, production-ready XGBoost model from Stage 1.
 
-I have exported the "brains" of these trained AIs so anyone can use them:
-* `stage1_xgb.json` 👉 The saved rules of the XGBoost Bouncer.
-* `stage2_lstm.keras` 👉 The saved neural network brain of the LSTM Detective.
-* `scaler.pkl` 👉 The math tool that scales new data so the AI can read it.
-
----
-
-## 🚀 How to Use My Code
-
-You can easily load my AI models into your own Python project using this code:
-
-```python
-import joblib
-from tensorflow.keras.models import load_model
-
-# 1. Wake up the AIs!
-bouncer_model = joblib.load('stage1_xgb.json')  
-detective_model = load_model('stage2_lstm.keras')
-data_scaler = joblib.load('scaler.pkl')
-
-# 2. Check your new data
-# (Write your code here to pass new transactions through the Bouncer and Detective)
+## 🚀 Key Takeaways & Methodologies
+1. **Dynamic Thresholding:** Proved that precision/recall trade-offs must be dictated by business metrics (e.g., maximum acceptable financial loss), not default probability scores.
+2. **Sequential Feature Engineering:** Demonstrated that a user's transaction velocity (time since last transaction) is a critical indicator of account takeover or card testing.
+3. **Dual-Threshold Optuna Search:** Built a custom loss function in Optuna that penalized the model dynamically based on the financial cost of manual review ($/ticket) vs. the cost of a missed fraud.
