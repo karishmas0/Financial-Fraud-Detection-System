@@ -35,7 +35,7 @@ Logistic Regression and Random Forest models were also trained under the same bu
 ## 🗂️ Repository Structure
 ├── fraud-detection-project.ipynb   # Main notebook (full pipeline)
 
-├── notebook_source.ipynb       # Kaggle-exported source
+├── __notebook_source__.ipynb       # Kaggle-exported source
 
 ├── business_xgb_model.json         # Trained Stage 1 XGBoost model
 
