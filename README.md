@@ -1,48 +1,74 @@
 # 🏦 Smart Fraud Detection System
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![XGBoost](https://img.shields.io/badge/XGBoost-Enabled-orange.svg)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-LSTM-yellow.svg)
+![Python](https://img.shields.io/badge/Python-3.8+-blue)
+![XGBoost](https://img.shields.io/badge/XGBoost-Enabled-orange)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-LSTM-yellow)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## 📌 Project Overview
-This project is an AI system built to catch financial fraud. Instead of just guessing if a transaction is fraud or not, this system is built like a real business tool: it focuses on catching bad guys while making sure good customers don't get accidentally blocked. 
+
+This project is an AI system built to catch financial fraud. Instead of just guessing if a transaction is fraud or not, this system is built like a real business tool: it focuses on catching bad guys while making sure good customers don't get accidentally blocked.
 
 Out of 1.78 million transactions, this AI **automated 99.44% of the decisions**. It left only a tiny fraction (0.56%) for humans to review manually, saving massive amounts of time and operational costs.
 
-👉 **[Click here to view the full Code, Dataset, and trained Model on Kaggle](https://www.kaggle.com/code/karishmas24/final-fraud-detection-project)**
+## 🧠 How It Works — Two-Stage Pipeline
 
-## 🏗️ How It Works (The Two Steps)
+**Stage 1 — Fast Filter (XGBoost)**
+A tuned XGBoost model scans every transaction and makes a quick call: auto-approve the safe ones, and send only the suspicious ones (~1.4% of traffic) forward for deeper inspection. The decision threshold isn't arbitrary — it's mathematically calculated to guarantee a maximum number of missed frauds, based on business risk tolerance.
 
-### Step 1: The Quick Filter (XGBoost)
-* **What it does:** This is the fast frontline defense. It looks at every transaction instantly.
-* **The Goal:** It auto-approves all the obvious "safe" transactions and flags anything suspicious. We set a strict mathematical rule so it never misses more than 175 frauds.
+**Stage 2 — Deep Inspection (LSTM)**
+Transactions flagged by Stage 1 go through an LSTM model that looks at each customer's last 5 transactions as a sequence — catching fraud patterns that only show up over time (e.g. unusual spending bursts), not just in a single transaction. This stage makes the final call: auto-approve, auto-reject, or send to a human review dashboard.
 
-### Step 2: The Deep Checker (LSTM Neural Network)
-* **What it does:** For the tricky transactions that Step 1 wasn't sure about, Step 2 steps in. It looks at the user's past behavior (like how much time passed since their last purchase).
-* **The Goal:** To "rescue" good customers who were accidentally flagged, and securely block real fraudsters. Only the absolute hardest cases are sent to a human worker.
+**Baseline Comparison**
+Logistic Regression and Random Forest models were also trained under the same business constraints to benchmark XGBoost's performance. XGBoost significantly outperformed both, requiring the smallest review queue to hit the same fraud-recall target.
 
-## 📊 Final Results
+## 📊 Key Results
 
-The system was tested on **1,782,993** real-world transactions with these amazing results:
+| Metric | Value |
+|---|---|
+| Total transactions processed | 1,782,993 |
+| Overall automation rate | 99.44% |
+| Sent to human review | 0.56% |
+| Stage 1 review queue | 1.40% of traffic |
+| Fraud caught | ~93% of all fraud |
 
-| Action Taken | Number of Transactions | Percentage |
-| :--- | :--- | :--- |
-| **Step 1: Auto-Approved (Safe)** | 1,755,426 | 98.45% |
-| **Step 2: Rescued (Good Users)** | 14,991 | 0.84% |
-| **Step 2: Auto-Blocked (Fraud)** | 2,654 | 0.15% |
-| **Sent to Humans for Review** | **9,922** | **0.56%** |
+## 🗂️ Repository Structure
+├── fraud-detection-project.ipynb   # Main notebook (full pipeline)
+├── notebook_source.ipynb       # Kaggle-exported source
+├── business_xgb_model.json         # Trained Stage 1 XGBoost model
+├── business_lr_model.pkl           # Baseline Logistic Regression model
+├── business_rf_model.pkl           # Baseline Random Forest model
+├── requirements.txt                # Python dependencies
+└── README.md
 
-* **Total AI Automation:** `99.44%`
-* **Real Fraud Missed:** Only 318
-* **Good Users Accidentally Blocked:** Only 995
 
-## 🛠️ Tools Used
-* **Data Prep:** `Pandas`, `NumPy`, `Scikit-Learn`
-* **Machine Learning:** `XGBoost`
-* **Deep Learning:** `TensorFlow` / `Keras` (LSTM)
-* **Smart Tuning:** `Optuna` (Used to train the AI based on saving money, not just basic accuracy)
+## ⚙️ Setup & Usage
 
-## 🚀 Why This Matters
-1. **Saves Money:** By reducing the manual review queue to just 9,900 tickets, a company doesn't have to hire a massive team of manual reviewers.
-2. **Happy Customers:** The "Deep Checker" rescued nearly 15,000 good customers from getting their cards incorrectly declined.
-3. **Real-World Logic:** The AI was trained on real business limits, making it ready for actual production environments in banking or fintech.
+1. Clone the repo:
+```bash
+   git clone https://github.com/karishmas0/Financial-Fraud-Detection-System.git
+   cd Financial-Fraud-Detection-System
+```
+
+2. Install dependencies:
+```bash
+   pip install -r requirements.txt
+```
+
+3. Open and run `fraud-detection-project.ipynb` (update `DATA_DIR` path to point to your dataset).
+
+## 🔗 Links
+
+👉 [View the full Code, Dataset, and trained Model on Kaggle](https://www.kaggle.com/code/karishmas24/fraud-detection-project/edit)
+
+## 🛠️ Tech Stack
+
+- **Python 3.8+**
+- **XGBoost** — Stage 1 fast filtering
+- **TensorFlow / Keras (LSTM)** — Stage 2 sequence-based detection
+- **Optuna** — hyperparameter and threshold tuning
+- **scikit-learn** — Logistic Regression & Random Forest baselines
+
+## 👤 Contributor
+
+**Karishma Singh** ([@karishmas0](https://github.com/karishmas0))
