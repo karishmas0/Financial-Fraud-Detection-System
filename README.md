@@ -38,9 +38,13 @@ Logistic Regression and Random Forest models were also trained under the same bu
 ├── notebook_source.ipynb       # Kaggle-exported source
 
 ├── business_xgb_model.json         # Trained Stage 1 XGBoost model
+
 ├── business_lr_model.pkl           # Baseline Logistic Regression model
+
 ├── business_rf_model.pkl           # Baseline Random Forest model
+
 ├── requirements.txt                # Python dependencies
+
 └── README.md
 
 
